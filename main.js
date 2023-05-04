@@ -124,7 +124,15 @@ function livelyPropertyListener(name, val) {
       barPercent = val
       break
     case "bgImage":
-      document.body.style.backgroundImage = `url(/${val.replace(/\\/g, "/")})`
+      const imagePaths = getImagePathsFromDirectory('./images');
+      let currentImageIndex = 0;
+
+      document.body.style.backgroundImage = `url('${imagePaths[currentImageIndex].replace(/\\/g, "/")}')`;
+
+      setInterval(function() {
+        currentImageIndex = (currentImageIndex + 1) % imagePaths.length;
+        document.body.style.backgroundImage = `url('${imagePaths[currentImageIndex].replace(/\\/g, "/")}}')`;
+      }, 3 * 60 * 1000);
       break
     case "bgBlur":
       document.body.style.backdropFilter = `blur(${Math.round(val)}px)`
@@ -206,6 +214,26 @@ function livelyPropertyListener(name, val) {
       // console.error(`Unknown customization option: ${name}`)
       break
   }
+}
+
+function getImagePathsFromDirectory(directoryPath) {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif'];// possible img formats
+  const imagePaths = [];
+
+  const directoryReader = new FileReader();
+  directoryReader.readAsArrayBuffer(new Blob([directoryPath], { type: "text/plain" }));
+  directoryReader.onloadend = function() {
+    const entries = directoryReader.result;
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      const fileExtension = entry.name.split('.').pop().toLowerCase();
+      if (imageExtensions.includes('.' + fileExtension)) {
+        imagePaths.push(entry.fullPath);
+      }
+    }
+  };
+
+  return imagePaths;
 }
 
 document.addEventListener("DOMContentLoaded", (event) => {
